@@ -104,7 +104,8 @@ export default function ProductsPage() {
           <option value="ios">iOS</option>
           <option value="android">Android</option>
           <option value="web">Web</option>
-          <option value="desktop">Desktop</option>
+          <option value="windows">Windows</option>
+          <option value="macos">macOS</option>
         </select>
         <select
           value={filters.category}
@@ -112,11 +113,11 @@ export default function ProductsPage() {
           className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All Categories</option>
-                {categories && categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
+          {categories && categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -139,9 +140,15 @@ export default function ProductsPage() {
             </div>
             <div className="mb-2 flex items-center justify-between gap-2">
               <h3 className="text-lg font-semibold text-slate-900">{product.name}</h3>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 capitalize">
-                {product.platform}
-              </span>
+              {product.platforms && product.platforms.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {product.platforms.map((platform) => (
+                    <span key={platform.id} className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 capitalize">
+                      {platform.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <p className="mb-3 line-clamp-2 text-sm text-slate-600">{product.description}</p>
             <div className="mb-3 flex flex-wrap gap-1">
@@ -232,7 +239,12 @@ function ProductModal({
   const [name, setName] = useState(product?.name || '');
   const [description, setDescription] = useState(product?.description || '');
   const [price, setPrice] = useState(product?.price || 0);
-  const [platform, setPlatform] = useState(product?.platform || '');
+  const [platformIds, setPlatformIds] = useState<string[]>(() => {
+    if (product?.platforms && product.platforms.length > 0) {
+      return product.platforms.map(p => p.name);
+    }
+    return [];
+  });
   const [categoryIds, setCategoryIds] = useState<string[]>(() => {
     if (product?.categories && product.categories.length > 0) {
       return product.categories.map(c => c.id);
@@ -253,8 +265,13 @@ function ProductModal({
       setName(product.name || '');
       setDescription(product.description || '');
       setPrice(product.price || 0);
-      setPlatform(product.platform || '');
       setIsActive(product.is_active ?? true);
+      if (product.platforms && product.platforms.length > 0) {
+        const platformNames = product.platforms.map(p => p.name);
+        setPlatformIds(platformNames);
+      } else {
+        setPlatformIds([]);
+      }
       if (product.categories && product.categories.length > 0) {
         const ids = product.categories.map(c => c.id);
         console.log('Setting categoryIds from product:', ids);
@@ -268,8 +285,8 @@ function ProductModal({
       setName('');
       setDescription('');
       setPrice(0);
-      setPlatform('');
       setIsActive(true);
+      setPlatformIds([]);
       setCategoryIds([]);
     }
   }, [product]);
@@ -283,7 +300,9 @@ function ProductModal({
       formData.append('name', name);
       formData.append('description', description);
       formData.append('price', price.toString());
-      formData.append('platform', platform);
+      // Always send platform_ids, even if empty array
+      const platformIdsJson = JSON.stringify(platformIds);
+      formData.append('platform_ids', platformIdsJson);
       // Always send category_ids, even if empty array
       const categoryIdsJson = JSON.stringify(categoryIds);
       formData.append('category_ids', categoryIdsJson);
@@ -357,19 +376,25 @@ function ProductModal({
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Platform</label>
-              <select
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                required
-              >
-                <option value="">Select Platform</option>
-                <option value="ios">iOS</option>
-                <option value="android">Android</option>
-                <option value="web">Web</option>
-                <option value="desktop">Desktop</option>
-              </select>
+              <label className="block text-sm font-medium text-slate-700">Platforms</label>
+              <div className="mt-1 max-h-32 overflow-y-auto rounded-lg border border-slate-300 p-2">
+                {['ios', 'android', 'web', 'windows', 'macos'].map((platformName) => (
+                  <label key={platformName} className="flex items-center py-1">
+                    <input
+                      type="checkbox"
+                      checked={platformIds.includes(platformName)}
+                      onChange={(e) => {
+                        const newPlatformIds = e.target.checked
+                          ? [...platformIds, platformName]
+                          : platformIds.filter(id => id !== platformName);
+                        setPlatformIds(newPlatformIds);
+                      }}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 text-sm text-slate-700 capitalize">{platformName}</span>
+                  </label>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700">Categories</label>

@@ -19,12 +19,19 @@ export interface Category {
   updated_at: string;
 }
 
+export interface Platform {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
-  platform: string;
+  platforms?: Platform[];
   categories?: Category[];
   main_image_url: string;
   additional_image_urls?: string[];
