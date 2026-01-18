@@ -8,6 +8,7 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { api, Product, Category, formatPrice } from '@/lib/api';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -366,12 +367,11 @@ function ProductModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              rows={3}
+            <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+            <RichTextEditor
+              content={description}
+              onChange={setDescription}
+              placeholder="Enter product description..."
             />
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
