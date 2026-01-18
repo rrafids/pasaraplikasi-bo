@@ -31,6 +31,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  discount_percentage?: number;
   platforms?: Platform[];
   categories?: Category[];
   main_image_url: string;

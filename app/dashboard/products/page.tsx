@@ -240,6 +240,7 @@ function ProductModal({
   const [name, setName] = useState(product?.name || '');
   const [description, setDescription] = useState(product?.description || '');
   const [price, setPrice] = useState(product?.price || 0);
+  const [discountPercentage, setDiscountPercentage] = useState(product?.discount_percentage || 0);
   const [platformIds, setPlatformIds] = useState<string[]>(() => {
     if (product?.platforms && product.platforms.length > 0) {
       return product.platforms.map(p => p.name);
@@ -266,6 +267,7 @@ function ProductModal({
       setName(product.name || '');
       setDescription(product.description || '');
       setPrice(product.price || 0);
+      setDiscountPercentage(product.discount_percentage || 0);
       setIsActive(product.is_active ?? true);
       if (product.platforms && product.platforms.length > 0) {
         const platformNames = product.platforms.map(p => p.name);
@@ -286,6 +288,7 @@ function ProductModal({
       setName('');
       setDescription('');
       setPrice(0);
+      setDiscountPercentage(0);
       setIsActive(true);
       setPlatformIds([]);
       setCategoryIds([]);
@@ -301,6 +304,7 @@ function ProductModal({
       formData.append('name', name);
       formData.append('description', description);
       formData.append('price', price.toString());
+      formData.append('discount_percentage', discountPercentage.toString());
       // Always send platform_ids, even if empty array
       const platformIdsJson = JSON.stringify(platformIds);
       formData.append('platform_ids', platformIdsJson);
@@ -338,11 +342,13 @@ function ProductModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
-        <h3 className="mb-6 text-xl font-bold text-slate-900">
-          {product ? 'Edit' : 'Add'} Product
-        </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="w-full max-w-2xl max-h-[90vh] rounded-2xl bg-white shadow-xl flex flex-col">
+        <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-200">
+          <h3 className="text-xl font-bold text-slate-900">
+            {product ? 'Edit' : 'Add'} Product
+          </h3>
+        </div>
+        <form id="product-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-slate-700">Name</label>
@@ -364,6 +370,20 @@ function ProductModal({
                 className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Discount Percentage</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                value={discountPercentage}
+                onChange={(e) => setDiscountPercentage(parseFloat(e.target.value) || 0)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                placeholder="0"
+              />
+              <p className="mt-1 text-xs text-slate-500">Enter discount percentage (0-100)</p>
             </div>
           </div>
           <div>
@@ -461,23 +481,24 @@ function ProductModal({
               <span className="ml-2 text-sm text-slate-700">Active</span>
             </label>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-          </div>
         </form>
+        <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 flex gap-2">
+          <button
+            type="submit"
+            form="product-form"
+            disabled={loading}
+            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
