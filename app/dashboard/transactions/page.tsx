@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api, Order, formatPrice } from '@/lib/api';
 
-export default function PaymentsPage() {
+export default function TransactionsPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -72,7 +72,7 @@ export default function PaymentsPage() {
     }
   };
 
-  if (loading) {
+  if (loading && (!orders || orders.length === 0)) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-slate-500">Loading...</div>
@@ -173,25 +173,28 @@ export default function PaymentsPage() {
       )}
 
       {/* Pagination */}
-      <div className="mt-6 flex items-center justify-between">
-        <button
-          onClick={() => setPage(Math.max(0, page - 1))}
-          disabled={page === 0}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-sm text-slate-700">
-          Page {page + 1} of {Math.ceil(total / 10)}
-        </span>
-        <button
-          onClick={() => setPage(page + 1)}
-          disabled={(page + 1) * 10 >= total}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      {total > 0 && (
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            onClick={() => setPage(Math.max(0, page - 1))}
+            disabled={page === 0}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-slate-700">
+            Page {page + 1} of {Math.ceil(total / 10)}
+          </span>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={(page + 1) * 10 >= total}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -9,6 +9,7 @@ import {
   ArchiveBoxIcon,
   TagIcon,
   CreditCardIcon,
+  KeyIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { api, User } from '@/lib/api';
@@ -41,7 +42,8 @@ export default function DashboardLayout({
     { name: 'Users', href: '/dashboard/users', icon: UserGroupIcon },
     { name: 'Products', href: '/dashboard/products', icon: ArchiveBoxIcon },
     { name: 'Categories', href: '/dashboard/categories', icon: TagIcon },
-    { name: 'Payments', href: '/dashboard/payments', icon: CreditCardIcon },
+    { name: 'Transactions', href: '/dashboard/transactions', icon: CreditCardIcon },
+    { name: 'Licenses', href: '/dashboard/licenses', icon: KeyIcon },
   ];
 
   return (
@@ -68,16 +70,14 @@ export default function DashboardLayout({
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-                  isActive
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${isActive
                     ? 'bg-indigo-600 text-white shadow-sm font-medium'
                     : 'text-slate-600 hover:bg-slate-100 font-normal'
-                }`}
+                  }`}
               >
                 <Icon
-                  className={`h-5 w-5 ${
-                    isActive ? 'text-white' : 'text-slate-600'
-                  }`}
+                  className={`h-5 w-5 ${isActive ? 'text-white' : 'text-slate-600'
+                    }`}
                 />
                 <span>{item.name}</span>
               </Link>

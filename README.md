@@ -36,4 +36,4 @@ Open [http://localhost:3001](http://localhost:3001) in your browser.
 - `/dashboard/users` - User management
 - `/dashboard/products` - Product management
 - `/dashboard/categories` - Category management
-- `/dashboard/payments` - Payment approval
+- `/dashboard/transactions` - Transaction management

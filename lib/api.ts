@@ -54,6 +54,10 @@ export interface Order {
   product?: Product;
   status: string;
   total: number;
+  duitku_reference?: string;
+  merchant_order_id?: string;
+  license_id?: string;
+  license_redeemed?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -251,6 +255,26 @@ class ApiClient {
     return this.request<Payment>(`/admin/payments/${id}/approve`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  // Orders and Licenses
+  async getAllOrders(limit = 10, offset = 0) {
+    return this.request<{ data: Order[]; total: number }>(
+      `/admin/orders?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async getPaidOrders(limit = 10, offset = 0) {
+    return this.request<{ data: Order[]; total: number }>(
+      `/admin/orders/paid?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async updateLicenseRedeemed(orderId: string, redeemed: boolean) {
+    return this.request<Order>(`/admin/orders/${orderId}/license`, {
+      method: 'PATCH',
+      body: JSON.stringify({ redeemed }),
     });
   }
 }
