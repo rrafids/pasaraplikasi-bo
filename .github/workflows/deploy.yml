@@ -1,0 +1,27 @@
+# This workflow will build and deploy the Next.js back office app
+
+name: Deploy Back Office
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-production:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy using ssh
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22
+        strict: false
+        script: |
+          cd /opt/tukuaplikasi-bo
+          git pull origin main
+          ./build.sh
+
