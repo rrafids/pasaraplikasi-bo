@@ -7,7 +7,8 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json yarn.lock* ./
-RUN yarn --frozen-lockfile
+# Longer network timeout for flaky connections; increase if builds still fail with "trouble with your network"
+RUN yarn --frozen-lockfile --network-timeout 300000
 
 # Rebuild the source code only when needed
 FROM base AS builder
