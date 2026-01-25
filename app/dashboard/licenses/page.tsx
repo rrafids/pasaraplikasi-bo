@@ -6,8 +6,9 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClipboardDocumentIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline';
-import { api, Order, formatPrice } from '@/lib/api';
+import { api, Order, formatPrice, Product, User } from '@/lib/api';
 
 export default function LicensesPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -18,9 +19,79 @@ export default function LicensesPage() {
   const [filterRedeemed, setFilterRedeemed] = useState<'all' | 'redeemed' | 'not_redeemed'>('all');
   const itemsPerPage = 10;
 
+  // Create license modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [formProductId, setFormProductId] = useState('');
+  const [formUserId, setFormUserId] = useState('');
+  const [formTotal, setFormTotal] = useState<string>('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+
   useEffect(() => {
     loadOrders();
   }, [page, filterRedeemed, search]);
+
+  useEffect(() => {
+    if (showCreateModal && products.length === 0 && users.length === 0) {
+      (async () => {
+        try {
+          const [pRes, uRes] = await Promise.all([
+            api.getProducts(200, 0, '', '', ''),
+            api.getUsers(200, 0),
+          ]);
+          setProducts(pRes.data || []);
+          setUsers(uRes.data || []);
+        } catch (e: any) {
+          setCreateError(e.message || 'Failed to load products and users');
+        }
+      })();
+    }
+  }, [showCreateModal, products.length, users.length]);
+
+  const openCreateModal = () => {
+    setShowCreateModal(true);
+    setFormProductId('');
+    setFormUserId('');
+    setFormTotal('');
+    setCreateError(null);
+    setCreatedOrder(null);
+  };
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setCreating(false);
+    setCreateError(null);
+    setCreatedOrder(null);
+    loadOrders();
+  };
+
+  const handleCreateLicense = async () => {
+    if (!formProductId || !formUserId) {
+      setCreateError('Please select a product and a user');
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      let total: number | undefined;
+      if (formTotal.trim() !== '') {
+        const n = parseFloat(formTotal);
+        total = Number.isNaN(n) ? undefined : n;
+      }
+      const order = await api.createLicense(formProductId, formUserId, total);
+      setCreatedOrder(order);
+      if (order.license_id) {
+        navigator.clipboard.writeText(order.license_id);
+      }
+    } catch (e: any) {
+      setCreateError(e.message || 'Failed to create license');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const loadOrders = async () => {
     try {
@@ -84,7 +155,111 @@ export default function LicensesPage() {
           <h1 className="text-2xl font-bold text-slate-900">License Management</h1>
           <p className="text-sm text-slate-500">Manage paid applications and their license keys</p>
         </div>
+        <button
+          onClick={openCreateModal}
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        >
+          <PlusIcon className="h-5 w-5" />
+          Create License
+        </button>
       </div>
+
+      {/* Create License Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              {createdOrder ? 'License Created' : 'Create License'}
+            </h2>
+            {createdOrder ? (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">License ID has been copied to your clipboard.</p>
+                <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
+                  <div className="text-xs font-medium text-slate-500 mb-1">License ID</div>
+                  <div className="text-sm font-mono text-slate-900 break-all">{createdOrder.license_id}</div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => copyToClipboard(createdOrder.license_id || '')}
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Copy again
+                  </button>
+                  <button
+                    onClick={closeCreateModal}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Product</label>
+                    <select
+                      value={formProductId}
+                      onChange={(e) => setFormProductId(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="">Select product</option>
+                      {products.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">User</label>
+                    <select
+                      value={formUserId}
+                      onChange={(e) => setFormUserId(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="">Select user</option>
+                      {users.map((u) => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Total (optional, 0 = complimentary)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formTotal}
+                      onChange={(e) => setFormTotal(e.target.value)}
+                      placeholder="0"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  {createError && (
+                    <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                      {createError}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-6 flex justify-end gap-2">
+                  <button
+                    onClick={closeCreateModal}
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateLicense}
+                    disabled={creating}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {creating ? 'Creating...' : 'Create'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-4">

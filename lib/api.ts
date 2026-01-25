@@ -277,6 +277,18 @@ class ApiClient {
       body: JSON.stringify({ redeemed }),
     });
   }
+
+  async createLicense(productId: string, userId: string, total?: number) {
+    const body: { product_id: string; user_id: string; total?: number } = {
+      product_id: productId,
+      user_id: userId,
+    };
+    if (total !== undefined && total !== null) body.total = total;
+    return this.request<Order>('/admin/licenses', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
 }
 
 export const api = new ApiClient();
