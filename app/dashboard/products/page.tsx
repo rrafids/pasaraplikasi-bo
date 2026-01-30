@@ -151,7 +151,10 @@ export default function ProductsPage() {
                 </div>
               )}
             </div>
-            <p className="mb-3 line-clamp-2 text-sm text-slate-600">{product.description}</p>
+            <div
+              className="mb-3 line-clamp-2 text-sm text-slate-600 prose prose-sm prose-p:my-0.5 prose-p:first:mt-0 prose-p:last:mb-0 prose-strong:font-semibold max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.description || '' }}
+            />
             <div className="mb-3 flex flex-wrap gap-1">
               {product.categories && product.categories.map((cat) => (
                 <span key={cat.id} className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
