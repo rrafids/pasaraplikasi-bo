@@ -162,6 +162,13 @@ class ApiClient {
     });
   }
 
+  async updateUserPassword(id: string, password: string) {
+    return this.request<{ message: string }>(`/admin/users/${id}/password`, {
+      method: 'PUT',
+      body: JSON.stringify({ password }),
+    });
+  }
+
   async deleteUser(id: string) {
     return this.request<{ message: string }>(`/admin/users/${id}`, {
       method: 'DELETE',

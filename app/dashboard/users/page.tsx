@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import {
   MagnifyingGlassIcon,
-  PlusIcon,
   PencilIcon,
   TrashIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 import { api, User } from '@/lib/api';
 
@@ -15,6 +15,7 @@ export default function UsersPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [passwordUser, setPasswordUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -39,6 +40,15 @@ export default function UsersPage() {
       await api.updateUser(id, data);
       await loadUsers();
       setEditingUser(null);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleUpdatePassword = async (id: string, password: string) => {
+    try {
+      await api.updateUserPassword(id, password);
+      setPasswordUser(null);
     } catch (err: any) {
       alert(err.message);
     }
@@ -156,14 +166,23 @@ export default function UsersPage() {
                       <td className="px-4 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => setPasswordUser(user)}
+                            className="text-amber-600 hover:text-amber-900"
+                            title="Update password"
+                          >
+                            <KeyIcon className="h-5 w-5" />
+                          </button>
+                          <button
                             onClick={() => setEditingUser(user)}
                             className="text-indigo-600 hover:text-indigo-900"
+                            title="Edit user"
                           >
                             <PencilIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleDelete(user.id)}
                             className="text-red-600 hover:text-red-900"
+                            title="Delete user"
                           >
                             <TrashIcon className="h-5 w-5" />
                           </button>
@@ -177,6 +196,15 @@ export default function UsersPage() {
           </table>
         </div>
       </div>
+
+      {/* Update password modal */}
+      {passwordUser && (
+        <UpdatePasswordModal
+          user={passwordUser}
+          onSave={(password) => handleUpdatePassword(passwordUser.id, password)}
+          onClose={() => setPasswordUser(null)}
+        />
+      )}
 
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
@@ -275,5 +303,90 @@ function EditUserForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function UpdatePasswordModal({
+  user,
+  onSave,
+  onClose,
+}: {
+  user: User;
+  onSave: (password: string) => void | Promise<void>;
+  onClose: () => void;
+}) {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onSave(password);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <h2 className="text-lg font-semibold text-slate-900">Update password</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Set a new password for {user.name} ({user.email})
+        </p>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">New password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Min. 6 characters"
+              required
+              minLength={6}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Confirm password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Repeat new password"
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            >
+              {submitting ? 'Saving…' : 'Update password'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
