@@ -11,6 +11,7 @@ import {
   CreditCardIcon,
   KeyIcon,
   ArrowRightOnRectangleIcon,
+  DocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 import { api, User } from '@/lib/api';
 
@@ -43,6 +44,7 @@ export default function DashboardLayout({
     { name: 'Products', href: '/dashboard/products', icon: ArchiveBoxIcon },
     { name: 'Categories', href: '/dashboard/categories', icon: TagIcon },
     { name: 'Transactions', href: '/dashboard/transactions', icon: CreditCardIcon },
+    { name: 'Verify transfer', href: '/dashboard/payments', icon: DocumentCheckIcon },
     { name: 'Licenses', href: '/dashboard/licenses', icon: KeyIcon },
   ];
 
