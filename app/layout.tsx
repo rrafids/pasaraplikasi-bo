@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "tukuaplikasi.com Admin",
   description: "Admin dashboard for tukuaplikasi.com",
+  icons: { icon: "/tlog.png", apple: "/tlog.png" },
 };
 
 export default function RootLayout({

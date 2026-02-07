@@ -31,9 +31,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="rounded-2xl bg-white p-8 shadow-xl">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-2xl font-bold text-white">
-              TA
-            </div>
+            <img src="/tlog.png" alt="Logo" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain" />
             <h1 className="text-2xl font-bold text-slate-900">tukuaplikasi.com Admin</h1>
             <p className="mt-2 text-sm text-slate-600">Sign in to your account</p>
           </div>
@@ -91,6 +89,12 @@ export default function LoginPage() {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
+
+            <div className="mt-6 rounded-lg bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800">
+              <p className="font-semibold">Default admin credentials:</p>
+              <p>Email: <strong>admin@tukuaplikasi.com</strong></p>
+              <p>Password: <strong>admin123</strong></p>
+            </div>
           </form>
         </div>
       </div>
